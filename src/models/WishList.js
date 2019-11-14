@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree';
+import { types, getParent, destroy } from 'mobx-state-tree';
 
 export const WishListItem = types
     .model({
@@ -15,16 +15,24 @@ export const WishListItem = types
         },
         changeImage(newImage) {
             self.image = newImage;
+        },
+        remove() {
+            // 2 means we want to go up two levels; one would take us into
+            // the array of items, two into the WishList
+            getParent(self, 2).remove(self);
         }
     }));
 
 export const WishList = types
     .model({
-        items: types.array(WishListItem)
+        items: types.optional(types.array(WishListItem), [])
     })
     .actions(self => ({
         add(item) {
             self.items.push(item);
+        },
+        remove(item) {
+            destroy(item);
         }
     }))
     .views(self => ({
